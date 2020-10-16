@@ -1,22 +1,21 @@
+import datetime
+import json
+import os
 import queue
 import threading
-import paho.mqtt.client as mqtt
-from functools import partial
-import json
-from db_model_postgrest import Datum
-from db_model_postgrest import sende_daten
-import datetime
 import time
-import os
+
+import paho.mqtt.client as mqtt
 import toml
 
+from db_model_postgrest import Datum
+from db_model_postgrest import sende_daten
 
 SKRIPTPFAD = os.path.abspath(os.path.dirname(__file__))
 CONFIGDATEI = "redmatic_to_sqldb_cfg.toml"
 
 
 def load_config():
-    """Lädt die Konfiguration aus dem smartmeter_cfg.toml File"""
     configfile = os.path.join(SKRIPTPFAD, CONFIGDATEI)
     with open(configfile) as conffile:
         config = toml.loads(conffile.read())
@@ -29,7 +28,7 @@ DATAPOINTS = ["STATE", "LOWBAT", "SET_TEMPERATURE", "VALVE_STATE", "ACTUAL_TEMPE
 queue_ = queue.Queue()
 
 
-def on_message(client, userdata, msg):
+def on_message(_, __, msg):
     queue_.put(msg.payload)
 
 
@@ -42,24 +41,11 @@ def main_mqtt():
 
 
 def convert_mqtt_daten(data):
-    try:
-        data_convert = json.loads(data.decode("utf-8"))
-    except AttributeError:
-        return None
+    data_convert = json.loads(data.decode("utf-8"))
     return data_convert
 
 
-def convert_wert(val, datapoint_type):
-    """ALT
-    if datapoint_type == "INTEGER":
-        wert = int(val)
-    elif datapoint_type == "FLOAT":
-        wert = float(val)
-    elif datapoint_type == "BOOL":
-        wert = bool(val)
-    else:
-        wert = val
-    """
+def convert_wert(val):
     return float(val)
 
 
@@ -67,7 +53,7 @@ def reduce_data(data):
     return Datum(
         datetime.datetime.fromtimestamp(data["ts"] / 1000),
         data["hm"]["deviceName"],
-        convert_wert(data["val"], data["hm"]["datapointType"]),
+        convert_wert(data["val"]),
         data["hm"]["datapoint"]
     )
 
