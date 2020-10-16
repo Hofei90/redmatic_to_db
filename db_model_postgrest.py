@@ -22,8 +22,6 @@ def sende_daten(url, table, headers, daten):
         datensatz.ts = datensatz.ts.strftime("%Y-%m-%d %H:%M:%S")
 
     r = requests.post(url, headers=headers, json=[datum.to_dict() for datum in daten])
-    print(r.status_code)
-    print(r.text)
 
 
 def status_auswerten(r, daten):

@@ -30,7 +30,6 @@ queue_ = queue.Queue()
 
 
 def on_message(client, userdata, msg):
-    print(msg.payload.decode("utf-8"))
     queue_.put(msg.payload)
 
 
@@ -83,7 +82,6 @@ def main_daten_verarbeiten():
             if datum["hm"]["datapoint"] in DATAPOINTS:
                 data.append(reduce_data(datum))
         if data:
-            print(data)
             sende_daten(CONFIG["url"], CONFIG["table"], headers, data)
         time.sleep(30)
 
